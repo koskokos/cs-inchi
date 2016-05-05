@@ -3,7 +3,7 @@ cs-inchi
 
 ## C# Bindings for the IUPAC InChI library
 
-[https://en.m.wikipedia.org/wiki/International_Chemical_Identifier]
+[About the InCHI](https://en.m.wikipedia.org/wiki/International_Chemical_Identifier)
 
-[http://www.inchi-trust.org/]
+[libinchi Source](http://www.inchi-trust.org/)
 
