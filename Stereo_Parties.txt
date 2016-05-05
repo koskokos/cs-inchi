@@ -1,0 +1,265 @@
+Taken from the comments in the file inchi_api.h from the InChI library. 
+
+/*******************************************************************
+    0D Stereo Parity and Type definitions
+ *******************************************************************
+            Note:
+            =====
+            o Below #A is the ordering number of atom A, starting from 0
+            o See parity values corresponding to 'o', 'e', and 'u' in
+              inchi_StereoParity0D definition below)
+
+           =============================================
+            stereogenic bond >A=B< or cumulene >A=C=C=B<
+           =============================================
+
+                                 neighbor[4]  : {#X,#A,#B,#Y} in this order
+     X                           central_atom : NO_ATOM
+      \            X      Y      type         : INCHI_StereoType_DoubleBond
+       A==B         \    /
+           \         A==B
+            Y
+
+    parity= 'e'    parity= 'o'   unknown parity = 'u'
+
+    Limitations:
+    ============
+    o Atoms A and B in cumulenes MUST be connected by a chain of double bonds;
+      atoms A and B in a stereogenic 'double bond' may be connected by a double,
+      single, or alternating bond.
+    o One atom may belong to up to 3 stereogenic bonds (i.g. in a fused
+      aromatic structure).
+    o Multiple stereogenic bonds incident to any given atom should
+      either all except possibly one have (possibly different) defined
+      parities ('o' or 'e') or should all have an unknown parity 'u'.
+
+      Note on parities of alternating stereobonds
+      ===========================================
+                                                     D--E
+      In large rings  (see Fig. 1, all              //   \\
+      atoms are C) all alternating bonds         B--C      F--G
+      are treated as stereogenic.              //              \\
+      To avoid "undefined" bond parities      A                  H
+      for bonds BC, DE, FG, HI, JK, LM, AN     \               /
+      it is recommended to mark them with       N==M       J==I
+      parities.                                     \     /
+                                                      L==K    Fig. 1
+      Such a marking will make
+      the stereochemical layer unambiguous
+      and it will be different from the          B--C      F--G
+      stereochemical layer of the second       //   \\   //    \\
+      structure (Fig. 2).                     A      D--E        H
+                                               \               /
+                                                N==M       J==I
+      By default, double and alternating            \     /
+      bonds in 8-member and greater rings             L==K    Fig. 2
+      are treated by InChI as stereogenic.
+
+
+           =============================================
+            tetrahedral atom
+           =============================================
+
+   4 neighbors
+
+            X                    neighbor[4] : {#W, #X, #Y, #Z}
+            |                    central_atom: #A
+         W--A--Y                 type        : INCHI_StereoType_Tetrahedral
+            |
+            Z
+   parity: if (X,Y,Z) are clockwize when seen from W then parity is 'e' otherwise 'o'
+   Example (see AXYZW above): if W is above the plane XYZ then parity = 'e'
+
+   3 neighbors
+
+              Y          Y       neighbor[4] : {#A, #X, #Y, #Z}
+             /          /        central_atom: #A
+         X--A  (e.g. O=S   )     type        : INCHI_StereoType_Tetrahedral
+             \          \
+              Z          Z
+
+   parity: if (X,Y,Z) are clockwize when seen from A then parity is 'e',
+                                                          otherwise 'o'
+   unknown parity = 'u'
+   Example (see AXYZ above): if A is above the plane XYZ then parity = 'e'
+   This approach may be used also in case of an implicit H attached to A.
+
+           =============================================
+            allene
+           =============================================
+
+       X       Y                 neighbor[4]  : {#X,#A,#B,#Y}
+        \     /                  central_atom : #C
+         A=C=B                   type         : INCHI_StereoType_Allene
+
+                                      Y      X
+                                      |      |
+     when seen from A along A=C=B:  X-A    Y-A
+
+                          parity:   'e'    'o'
+
+   parity: if A, B, Y are clockwise when seen from X then parity is 'e',
+                                                          otherwise 'o'
+   unknown parity = 'u'
+   Example (see XACBY above): if X on the diagram is above the plane ABY
+                                                      then parity is 'o'
+
+   Limitations
+   ===========
+   o Atoms A and B in allenes MUST be connected by a chain of double bonds;
+
+   ==============================================
+   Note. Correspondence to CML 0D stereo parities
+   ==============================================
+   a list of 4 atoms corresponds to CML atomRefs4
+
+   tetrahedral atom
+   ================
+       CML atomParity > 0 <=> INCHI_PARITY_EVEN
+       CML atomParity < 0 <=> INCHI_PARITY_ODD
+
+                                    | 1   1   1   1  |  where xW is x-coordinate of
+                                    | xW  xX  xY  xZ |  atom W, etc. (xyz is a
+       CML atomParity = determinant | yW  yX  yY  yZ |  'right-handed' Cartesian
+                                    | zW  zX  xY  zZ |  coordinate system)
+
+   allene (not yet defined in CML)
+   ===============================
+   the parity corresponds to the sign of the following determinant
+   in exactly same way as for tetrahedral atoms:
+
+       | 1   1   1   1  |  where bonds and neighbor[4] array are
+       | xX  xA  xB  xY |  same as defined above for allenes
+       | yX  yA  yB  yY |  Obviously, the parity is same for
+       | zX  zA  xB  zY |  {#X,#A,#B,#Y} and {#Y,#B,#A,#X}
+                           because of the even number of column permutations.
+
+   stereogenic double bond and (not yet defined in CML) cumulenes
+   ==============================================================
+       CML 'C' (cis)      <=> INCHI_PARITY_ODD
+       CML 'T' (trans)    <=> INCHI_PARITY_EVEN
+
+
+   How InChI uses 0D parities
+   ==========================
+
+   1. 0D parities are used if all atom coordinates are zeroes.
+
+   In addition to that:
+
+   2. 0D parities are used for Stereobonds, Allenes, or Cumulenes if:
+
+   2a. A bond to the end-atom is shorter than MIN_BOND_LEN=0.000001
+   2b. A ratio of two bond lengths to the end-atom is smaller than MIN_SINE=0.03
+   2c. In case of a linear fragment X-A=B end-atom A is treated as satisfying 2a-b
+
+       0D parities are used if 2a or 2b or 2c applies to one or both end-atoms.
+
+   3. 0D parities are used for Tetrahedral Atoms if at least one of 3a-c is true:
+
+   3a. One of bonds to the central atom is shorter than MIN_BOND_LEN=0.000001
+   3b. A ratio of two bond lengths to the central atom is smaller than MIN_SINE=0.03
+   3c. The four neighbors are almost in one plane or the central atom and
+       its only 3 explicit neighbors are almost in one plane
+
+   Notes on 0D parities and 'undefined' stereogenic elements
+   =========================================================
+
+   If 0D parity is to be used according to 1-3 but    CH3     CH3
+   has not been provided then the corresponding         \    /
+   stereogenic element is considered 'undefined'.        C=CH
+                                                        /
+   For example, if in the structure (Fig. 3)           H
+   the explicit H has been moved so that it                Fig. 3
+   has same coordinates as atom >C= (that is,
+   the length of the bond H-C became zero)
+   then the double bond is assigned 'undefined'       CH3      CH3
+   parity which by default is omitted from the          \     /
+   Identifier.                                           CH=CH
+
+   However, the structure on Fig. 4 will have double        Fig. 4
+   bond parity 'o' and its parity in the Identifier is (-).
+
+   Notes on 0D parities in structures containing metals
+   ====================================================
+   Since InChI disconnects bonds to metals the 0D parities upon the
+   disconnection may change in several different ways:
+
+   1) previously non-stereogenic bond may become stereogenic:
+
+         \     /                            \     /  
+          CH==CH          disconnection      CH==CH  
+           \ /               ======>                 
+            M                                  M     
+
+     before the disconnection:    after the disconnection:
+     atoms C have valence=5 and   the double bond may become
+     the double bond is not       stereogenic
+     recognized as stereogenic
+
+   2) previously stereogenic bond may become non-stereogenic:
+
+       M                           M(+)       
+        \    /                             / 
+         N==C      disconnection    (-)N==C  
+             \        ======>              \ 
+
+   3) Oddball structures, usually resulting from projecting 3D
+      structures on the plane, may contain fragment like that
+      depicted on Fig. 5:
+
+              M   A                      M   A   
+              |\ /   B                      /   B 
+              | X   /     disconnection    /   /  
+              |/ \ /         ======>      /   /   
+              C===C                      C===C    
+             Fig. 5
+     (X stands for bond intersection)
+    
+     A-C=C-B parity is              A-C=C-B parity is
+     trans (e)                      cis (o) or undefined
+     because the bond               because C valence = 3,
+     orientation is same            not 4.
+     as on Fig, 6 below:
+
+          A       M
+           \     /     Removal of M from the structure
+            C===C      on Fig. 5 changes the geometry from trans
+           /     \     to cis. 
+          M'      B    Removal of M and M' from the structure
+          Fig. 6       on Fig. 6 does not change the A-C=C-B
+                       geometry: it is trans.
+
+   To resolve the problem InChI API accepts the second parity
+   corresponding to the metal-disconnected structure.
+   To store both bond parities use left shift by 3 bits:
+
+   inchi_Stereo0D::parity = ParityOfConnected | (ParityOfDisconnected<<3)
+
+   In case when only disconnected structure parity exists set
+   ParityOfConnected = INCHI_PARITY_UNDEFINED.
+   This is the only case when INCHI_PARITY_UNDEFINED parity
+   may be fed to the InChI.
+
+   In cases when the bond parity in a disconnected structure exists and
+   differs from the parity in the connected structure the atoms A and B
+   should be non-metals.
+
+****************************************************************************/
+
+
+/*************************************************************************
+ * Notes on using INCHI_BOND_STEREO_SINGLE_*  from inchi_BondStereo2D    *
+ *                                                                       *
+ * These stereo markings are used by InChI to characterize a stereogenic *
+ * atom if and only if all neighbors of this atom have same z-coordinate *
+ * as this atom (that is, in case of 2D fragment).                       *
+ * The only exception is INCHI_BOND_STEREO_SINGLE_?EITHER marking which  *
+ * always assigns to the atom an "unknown" parity (u).                   *
+ *                                                                       *
+ * Note that the -NEWPS InChI option changes 2D stereo interpretation:   *
+ * only bonds that have sharp end pointing to the stereogenic atom are   *
+ * considered as being out of plane and only sharp ends of               *
+ * INCHI_BOND_STEREO_SINGLE_?EITHER bonds are considered to determine    *
+ * whether the stereochemistry is unknown.                               *
+ *************************************************************************/

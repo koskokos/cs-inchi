@@ -1,0 +1,46 @@
+Taken from the comments in the file inchi_api.h from the InChI library. 
+
+ /**********************************************************
+     Using inchi_Input.Options related to ChiralFlag
+  **********************************************************
+  Awailable options (use - instead of / for O.S. other than MS Windows):
+  
+      /SUCF            Use Chiral Flag
+      /ChiralFlagON    Set Chiral Flag
+      /ChiralFlagOFF   Set Not-Chiral Flag
+
+   The following table describes the effect of the options
+   ---------------------------------------------------------------
+   Options               Equivalent to    Chiral Flag Information
+                                          stored in AuxInfo
+   ---------------------------------------------------------------
+   /SUCF /ChiralFlagON    /SABS             Chiral Flag
+   /SUCF /ChiralFlagOFF   /SREL             Not-Chiral Flag 
+   /SUCF                  /SREL             none
+   /ChiralFlagON           none             Chiral Flag
+   /ChiralFlagOFF          none             Not-Chiral Flag
+
+  *************************************************************
+    Other options available in InChI Library (case insensitive)
+  *************************************************************
+    /SNon        Exclude stereo (Default: Include Absolute stereo)
+    /SRel        Relative stereo
+    /SRac        Racemic stereo
+
+    /SUU         Include omitted unknown/undefined stereo
+    /NEWPS       Narrow end of wedge points to stereocenter (default: both)
+    /RecMet      Include reconnected bond to metal results
+    /FixedH      Mobile H Perception Off (Default: On)
+    /AuxNone     Omit auxiliary information (default: Include)
+    /NoADP       Disable Aggressive Deprotonation (for testing only)
+    /Compress    Compressed output
+    /DoNotAddH   Overrides inchi_Atom::num_iso_H[0] == -1
+    /Wnumber     Set time-out per structure in seconds; W0 means unlimited
+                 In InChI library the default value is unlimited
+    /OutputSDF   Output SDfile instead of InChI
+    /WarnOnEmptyStructure Warn and produce empty InChI for empty structure
+    /Key         Calculate InChIKey
+
+    Empty InChI format:   InChI=1//
+                          AuxInfo=1//
+*/

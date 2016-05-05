@@ -1,0 +1,12 @@
+C:\Documents and Settings\Action Customer\My Documents\Visual Studio 2008\Projects\csinchi\csinchi\bin\Debug\csinchi.dll
+C:\Documents and Settings\Action Customer\My Documents\Visual Studio 2008\Projects\csinchi\csinchi\bin\Debug\csinchi.pdb
+C:\Documents and Settings\Action Customer\My Documents\Visual Studio 2008\Projects\csinchi\csinchi\obj\Debug\ResolveAssemblyReference.cache
+C:\Documents and Settings\Action Customer\My Documents\Visual Studio 2008\Projects\csinchi\csinchi\obj\Debug\csinchi.dll
+C:\Documents and Settings\Action Customer\My Documents\Visual Studio 2008\Projects\csinchi\csinchi\obj\Debug\csinchi.pdb
+C:\Documents and Settings\Action Customer\My Documents\Visual Studio 2008\Projects\csinchi\csinchi\bin\Debug\CSInChI.xml
+G:\csinchi\csinchi\bin\Debug\CSInChI.dll
+G:\csinchi\csinchi\bin\Debug\CSInChI.pdb
+G:\csinchi\csinchi\bin\Debug\CSInChI.xml
+G:\csinchi\csinchi\obj\Debug\ResolveAssemblyReference.cache
+G:\csinchi\csinchi\obj\Debug\CSInChI.dll
+G:\csinchi\csinchi\obj\Debug\CSInChI.pdb
