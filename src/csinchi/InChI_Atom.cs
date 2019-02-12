@@ -286,17 +286,17 @@ namespace CSInChI
             {
                 fixed (sbyte* n = num_iso_H)
                 {
-                    return new Span<sbyte>(n, 20).ToArray();
+                    return new Span<sbyte>(n, 4).ToArray();
                 }
             }
             set
             {
-                if (value.Length != 20)
-                    throw new ArgumentException("The array 'num_iso_H' must have a length of 20 to be correctly marshalled");
+                if (value.Length != 4)
+                    throw new ArgumentException("The array 'num_iso_H' must have a length of 4 to be correctly marshalled");
 
                 fixed (sbyte* n = num_iso_H)
                 {
-                    value.AsSpan().CopyTo(new Span<sbyte>(n, 20));
+                    value.AsSpan().CopyTo(new Span<sbyte>(n, 4));
                 }
             }
         }
