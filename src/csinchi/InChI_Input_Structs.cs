@@ -226,7 +226,7 @@ namespace CSInChI
             else
             {
                 StereoDataPtr = Marshal.ReAllocHGlobal(StereoDataPtr, new IntPtr((NumStereo0D + 1) * stSize));
-                IntPtr p = new IntPtr(StereoDataPtr.ToInt32() + NumStereo0D * stSize);
+                IntPtr p = new IntPtr(StereoDataPtr.ToInt64() + NumStereo0D * stSize);
                 Marshal.StructureToPtr(stereo, p, true);
             }
             numStereo++;
@@ -248,7 +248,7 @@ namespace CSInChI
             else
             {
                 AtomsPtr = Marshal.ReAllocHGlobal(AtomsPtr, new IntPtr((NumAtoms + 1) * atomSize));
-                IntPtr p = new IntPtr(AtomsPtr.ToInt32() + NumAtoms * atomSize);
+                IntPtr p = new IntPtr(AtomsPtr.ToInt64() + NumAtoms * atomSize);
                 Marshal.StructureToPtr(atom, p, true);
             }
             numAtoms++;

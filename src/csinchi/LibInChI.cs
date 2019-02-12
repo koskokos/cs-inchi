@@ -32,6 +32,7 @@
  */
 
 using System;
+using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -47,39 +48,7 @@ namespace CSInChI
     /// with the InChI key as a property. Note the use of the try/finally pattern that ensures the disposal
     /// of unmanaged memory even if an exception is thrown.
     /// <code>
-    ///    static void Main(string[] args)
-    ///    {
-    ///        string inchi = "InChI=1/C4H6O6/c5-1(3(7)8)2(6)4(9)10/h1-2,5-7,9H/q-2/t1-,2+";
-    ///        InChIStrucOutput outStruc = new InChIStrucOutput();
-    ///        InChIStrucInput inStruc = new InChIStrucInput();
-    ///        
-    ///        try
-    ///        {
-    ///            LibInChI.ParseInChI(inchi, out outStruc);
-    ///
-    ///             //get the InChI key
-    ///            string key = LibInChI.GetInChIKey(inchi);
-    ///
-    ///            //create structure data to generate the sdf file text
-    ///            inStruc.SetAtoms(outStruc.GetAtoms());
-    ///            inStruc.SetStereoData(outStruc.GetStereoData());
-    ///            inStruc.Options = "/outputsdf";
-    ///
-    ///            string sdfText = LibInChI.GetInChI(ref inStruc);
-    ///                       
-    ///            //append the key to the file text as a property
-    ///            key = "> &lt;INCHIKEY&gt;\n" + key + "\n";
-    ///            sdfText = sdfText.Insert(sdfText.Length-4 ,key);
-    ///        
-    ///            File.WriteAllText("struc1.sdf",sdfText);
-    ///        }
-    ///        finally
-    ///        {
-    ///            //free the unmanaged memory
-    ///            outStruc.Dispose();
-    ///            inStruc.Dispose();
-    ///        }
-    ///    } 
+        
     /// /*The output is:
     ///
     ///Structure #1
@@ -201,6 +170,40 @@ namespace CSInChI
     ///</example>
     public static class LibInChI
     {
+        static void Main(string[] args)
+        {
+            string inchi = "InChI=1S/C4H6O6/c5-1(3(7)8)2(6)4(9)10/h1-2,5-7,9H/q-2/t1-,2+";
+            InChIStrucOutput outStruc = new InChIStrucOutput();
+            InChIStrucInput inStruc = new InChIStrucInput();
+
+            try
+            {
+                LibInChI.ParseInChI(inchi, out outStruc);
+
+                //get the InChI key
+                string key = LibInChI.GetInChIKey(inchi);
+
+                //create structure data to generate the sdf file text
+                inStruc.SetAtoms(outStruc.GetAtoms().ToArray());
+                inStruc.SetStereoData(outStruc.GetStereoData());
+                //inStruc.Options = "/outputsdf";
+
+                string sdfText = LibInChI.GetInChI(ref inStruc);
+
+                //append the key to the file text as a property
+                key = "> &lt;INCHIKEY&gt;\n" + key + "\n";
+                sdfText = sdfText.Insert(sdfText.Length - 4, key);
+
+                File.WriteAllText("struc1.sdf", sdfText);
+            }
+            finally
+            {
+                //free the unmanaged memory
+                outStruc.Dispose();
+                inStruc.Dispose();
+            }
+        }
+
         /// <summary>
         /// Constant defined in inchi_api.h
         /// 
@@ -293,7 +296,7 @@ namespace CSInChI
         /// <param name="structData">the structure that holds the input structure data</param>
         /// <param name="output">the structure that holds the InChI output</param>
         /// <returns>an error code indicating the success or failure of the function call</returns>
-        [DllImport("libinchi.dll", EntryPoint = "GetINCHI")]
+        [DllImport("libinchi.dll", EntryPoint = "GetStdINCHI")]
         public static extern int GetInChI(ref InChIStrucInput structData, out InChIStringOutput output);
 
         /// <summary>
@@ -305,8 +308,8 @@ namespace CSInChI
         /// <param name="inchi">the inchi string</param>
         /// <param name="sb">a StringBuilder to hold the InChI key output</param>
         /// <returns>an error code indicating the success or failure of the function call</returns>
-        [DllImport("libinchi.dll", EntryPoint = "GetINCHIKeyFromINCHI")]
-        public static extern int GetInChIKey(string inchi, StringBuilder sb);
+        [DllImport("libinchi.dll", EntryPoint = "GetStdINCHIKeyFromStdINCHI")]
+        public static extern int GetInChIKey([MarshalAs(UnmanagedType.LPStr)]string inchi, [MarshalAs(UnmanagedType.LPStr)]StringBuilder sb);
 
         /// <summary>
         /// An external method that calls the CheckInChIKey function
@@ -580,7 +583,7 @@ namespace CSInChI
         /// </example>
         public static string GetInChIKey(string inchi)
         {
-            StringBuilder sb = new StringBuilder(25);
+            StringBuilder sb = new StringBuilder(28);
             int retCode = GetInChIKey(inchi, sb);
 
             if (retCode != 0)

@@ -133,8 +133,9 @@ namespace CSInChI
         /// Converts the AtomsPtr to an array of InChIAtom structures.
         /// </summary>
         /// <returns>An array of InChIAtom structures</returns>
-        public InChIAtom[] GetAtoms()
+        public Span<InChIAtom> GetAtoms()
         {
+            //return new Span<InChIAtom>(AtomsPtr.ToPointer(), NumAtoms);
             int atomSize = Marshal.SizeOf(typeof(InChIAtom));
             InChIAtom[] iAtoms = new InChIAtom[NumAtoms];
 
@@ -144,7 +145,7 @@ namespace CSInChI
             {
                 a = (InChIAtom)Marshal.PtrToStructure(pAtom, typeof(InChIAtom));
                 iAtoms[i] = a;
-                pAtom = new IntPtr(pAtom.ToInt32() + atomSize);
+                pAtom = new IntPtr(pAtom.ToInt64() + atomSize);
             }
             
             return iAtoms;
@@ -166,7 +167,7 @@ namespace CSInChI
 
             for (int i = 0; i < NumStereo0D; i++)
             {
-                stereo = (InChIStereo0D)Marshal.PtrToStructure(new IntPtr(pStereo.ToInt32() + i * stereoSize), typeof(InChIStereo0D));
+                stereo = (InChIStereo0D)Marshal.PtrToStructure(new IntPtr(pStereo.ToInt64() + i * stereoSize), typeof(InChIStereo0D));
                 stereoInfo[i] = stereo;
             }
             return stereoInfo;

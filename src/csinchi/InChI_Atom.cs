@@ -43,7 +43,7 @@ namespace CSInChI
     /// specified by the MarshalAs attribute.
     /// </summary>
     [StructLayout(LayoutKind.Sequential, CharSet=CharSet.Ansi)]
-    public struct InChIAtom
+    public unsafe struct InChIAtom
     {
         /// <summary>
         /// Creates a new InChIAtom with the specified symbol and leaves setting the 
@@ -64,8 +64,7 @@ namespace CSInChI
             : this()
         {
             ElementName = symbol;
-            hCounts = new sbyte[4];
-            hCounts[0] = Convert.ToSByte(impHCount);
+            num_iso_H[0] = (sbyte)impHCount;
         }
 
         /// <summary>
@@ -92,9 +91,9 @@ namespace CSInChI
         public InChIAtom(string symbol, double x, double y, double z, int impHCount)
             : this(symbol,impHCount)
         {
-            xCoord = x;
-            yCoord = y;
-            zCoord = z;
+            this.x = x;
+            this.y = y;
+            this.z = z;
         }
 
         /// <summary>
@@ -125,72 +124,23 @@ namespace CSInChI
             BondTypes = bondTypes;
             this.charge = charge;
             this.radical = radical;
-            isoMass = isotopicMass;
+            isotopic_mass = isotopicMass;
         }
+
+        public double x;
+        public double y;
+        public double z;
+        public fixed short neighbor[20];
+        public fixed sbyte bond_type[20];    /* inchi_BondType */
+        public fixed sbyte bond_stereo[20];
+        public fixed sbyte elname[6];
+        short num_bonds;
+        public fixed sbyte num_iso_H[4];
+        public short isotopic_mass;
+        public sbyte radical;
+        public sbyte charge;
+
         
-        /// <summary>
-        /// The X coordinate of the atom.
-        /// </summary>
-        public double X
-        {
-            get { return xCoord; }
-            set { xCoord = value; }
-        }
-
-        private double xCoord;
-
-        /// <summary>
-        /// The Y coordinate of the atom.
-        /// </summary>
-        public double Y
-        {
-            get { return yCoord; }
-            set { yCoord = value; }
-        }
-
-        private double yCoord;
-
-        /// <summary>
-        /// The Z coordinate of the atom.
-        /// </summary>
-        public double Z
-        {
-            get { return zCoord; }
-            set { zCoord = value; }
-        }
-
-        private double zCoord;
-
-        /// <summary>
-        /// Sets the coordinates of this atom.
-        /// </summary>
-        /// <param name="x">the X coordinate</param>
-        /// <param name="y">the Y coordinate</param>
-        /// <param name="z">the Z coordinate</param>
-        public void SetCoords(double x, double y, double z)
-        {
-            xCoord = x;
-            yCoord = y;
-            zCoord = z;
-        }
-
-        /// <summary>
-        /// Gets an array containing the coordinates of this atom
-        /// or sets the coordinates from an array of length 3.
-        /// </summary>
-        public double[] Coords
-        {
-            get { return new double[] { xCoord, yCoord, zCoord }; }
-            set
-            {
-                if (value.Length != 3)
-                    throw new ArgumentException("The coordinate array must has a length of 3");
-
-                xCoord = value[0];
-                yCoord = value[1];
-                zCoord = value[2];
-            }
-        }
 
         /// <summary>
         /// An array containing the indices of neighboring atoms.
@@ -198,25 +148,31 @@ namespace CSInChI
         /// </summary>
         public short[] Neighbors
         {
-            get { return neighbors; }
+            get
+            {
+                fixed (short* n = neighbor)
+                {
+                    return new Span<short>(n, 20).ToArray();
+                }
+            }
             set
             { 
                 if(value.Length != 20)
                     throw new ArgumentException("The array 'Neighbors' must have a length of 20 to be correctly marshalled");
                 
-                bool okayInput = Array.TrueForAll<short>(value, delegate(short val)
+                bool okayInput = Array.TrueForAll(value, delegate(short val)
                 {
                     if (val > 1023 || val < 0)
                         return false;
                     return true;
                 });
 
-                neighbors = value;
+                fixed (short* n = neighbor)
+                {
+                    value.AsSpan().CopyTo(new Span<short>(n, 20));
+                }
             }
         }
-
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 20)]
-        private short[] neighbors;
 
         /// <summary>
         /// An array containing the data on the types of bonds
@@ -226,17 +182,24 @@ namespace CSInChI
         /// </summary>
         public sbyte[] BondTypes
         {
-            get { return bondTypes; }
+            get
+            {
+                fixed (sbyte* n = bond_type)
+                {
+                    return new Span<sbyte>(n, 20).ToArray();
+                }
+            }
             set
             {
                 if (value.Length != 20)
                     throw new ArgumentException("The array 'BondTypes' must have a length of 20 to be correctly marshalled");
-                bondTypes = value;
+
+                fixed (sbyte* n = bond_type)
+                {
+                    value.AsSpan().CopyTo(new Span<sbyte>(n, 20));
+                }
             }
         }
-        
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 20)]
-        private sbyte[] bondTypes;    /* inchi_BondType */
        
         /// <summary>
         ///The stereo data if for the bonds the atom is involved in.
@@ -246,18 +209,25 @@ namespace CSInChI
         /// </summary>
         public sbyte[] BondStereo
         {
-            get { return bondStereo; }
-            set 
-            {
-                if(value.Length != 20)
-                     throw new ArgumentException("The array 'BondStereo' must have a length of 20 to be correctly marshalled");
 
-                bondStereo = value;
+            get
+            {
+                fixed (sbyte* n = bond_stereo)
+                {
+                    return new Span<sbyte>(n, 20).ToArray();
+                }
+            }
+            set
+            {
+                if (value.Length != 20)
+                    throw new ArgumentException("The array 'bond_stereo' must have a length of 20 to be correctly marshalled");
+
+                fixed (sbyte* n = bond_stereo)
+                {
+                    value.AsSpan().CopyTo(new Span<sbyte>(n, 20));
+                }
             }
         }
-
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 20)]
-        private sbyte[] bondStereo;
 
         /// <summary>
         /// The element name. A maximum of 6 characters.
@@ -266,19 +236,22 @@ namespace CSInChI
         {
             get
             {
-                return elName;
+                fixed (sbyte* e = elname)
+                {
+                    return new string(e);
+                }
             }
             set
             {
                 if (value.Length > 6)
                     throw new ArgumentException("The maximum length of the element name is 6");
-                
-                elName = value;
+
+                for (int i = 0; i < value.Length; i++)
+                {
+                    bond_stereo[i] = (sbyte)value[i];
+                }
             }
         }
-
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 6)]
-        private string elName;
 
         /// <summary>
         /// The number of bonds the atom is involved in.
@@ -288,15 +261,13 @@ namespace CSInChI
             get { return NumBonds; }
             set
             {
-                if (numBonds > 20)
+                if (num_bonds > 20)
                     throw new ArgumentException("The maximum number of bonds an InChIAtom can have is 20");
 
-                numBonds = value;
+                num_bonds = value;
             }
 
         }
-
-        private short numBonds;
 
         /// <summary>
         /// The number of implicit hydrogen atoms. The array must always 
@@ -311,53 +282,24 @@ namespace CSInChI
         /// 
         public sbyte[] HCounts
         {
-            get { return hCounts; }
+            get
+            {
+                fixed (sbyte* n = num_iso_H)
+                {
+                    return new Span<sbyte>(n, 20).ToArray();
+                }
+            }
             set
             {
-                if (value.Length != 4)
-                    throw new ArgumentException("The array 'HCounts' must have length 4 to be marshalled correctly");
-                hCounts = value;
+                if (value.Length != 20)
+                    throw new ArgumentException("The array 'num_iso_H' must have a length of 20 to be correctly marshalled");
+
+                fixed (sbyte* n = num_iso_H)
+                {
+                    value.AsSpan().CopyTo(new Span<sbyte>(n, 20));
+                }
             }
         }
-
-
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
-        private sbyte[] hCounts;
-
-        /// <summary>
-        /// The isotopic mass calculated as
-        /// ISOTOPIC_SHIFT_FLAG + mass - (average atomic mass)
-        /// </summary>
-        public short IsotopicMass
-        {
-            get { return isoMass; }
-            set { isoMass = value; }
-        }
-
-        private short isoMass;
-
-        /// <summary>
-        /// A flag defining the type of radical if any.
-        /// The values are defined in the Radical_Type enumeration.
-        /// </summary>
-        public sbyte Radical
-        {
-            get { return radical; }
-            set { radical = value; }
-        }
-
-        private sbyte radical;
-
-        /// <summary>
-        /// The charge on the atom.
-        /// </summary>
-        public sbyte Charge
-        {
-            get { return charge; }
-            set { charge = value; }
-        }
-
-        private sbyte charge;
 
     }//end struct InChIAtom
 
@@ -377,9 +319,9 @@ namespace CSInChI
         /// <param name="parity"></param>
         public InChIStereo0D(int[] neighbors, int parity): this()
         {
-            Neighbors = Array.ConvertAll<int, short>(neighbors, new Converter<int, short>(Convert.ToInt16));
-            this.parity = Convert.ToSByte(parity);
-            type = StereoType0D.DOUBLEBOND;
+            Neighbors = Array.ConvertAll(neighbors, new Converter<int, short>(Convert.ToInt16));
+            this.Parity = Convert.ToSByte(parity);
+            Type = StereoType0D.DOUBLEBOND;
             centAtom = LibInChI.NO_ATOM;
         }
         
@@ -404,8 +346,8 @@ namespace CSInChI
         {
             Neighbors = neighbors;
             centAtom = centralAtom;
-            this.type = type;
-            this.parity = parity;
+            Type = type;
+            this.Parity = parity;
         }
 
         /// <summary>
@@ -418,7 +360,7 @@ namespace CSInChI
         /// <param name="parity">the stereo parity</param>
         public InChIStereo0D(int[] neighbors, int centralAtom, int type, int parity):this()
         {
-            Neighbors = Array.ConvertAll<int,short>(neighbors,
+            Neighbors = Array.ConvertAll(neighbors,
                 new Converter<int,short>(Convert.ToInt16));
             
             centAtom = Convert.ToInt16(centralAtom);
@@ -438,7 +380,7 @@ namespace CSInChI
                 if(value.Length != 4)
                     throw new ArgumentException("The array 'Neighbors' must have length 4");
 
-                bool okayInput = Array.TrueForAll<short>(value, delegate(short val)
+                bool okayInput = Array.TrueForAll(value, delegate(short val)
                 {
                     if (val > 1023 || val < 0)
                         return false;
@@ -453,7 +395,7 @@ namespace CSInChI
         }
 
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
-        private short[] neighbors;
+        short[] neighbors;
         
         /// <summary>
         /// The index of the central atom in a tetrahedral stereo center
@@ -472,30 +414,18 @@ namespace CSInChI
             }
         }
 
-        private short centAtom;
+        short centAtom;
 
         /// <summary>
         /// The type of stereo center. The possible values are defined
         /// in the InChI_0D_StereoType enumeration.
         /// </summary>
-        public sbyte Type
-        {
-            get { return type; }
-            set { type = value; }
-        }
+        public sbyte Type;
 
-        private sbyte type;
-        
         /// <summary>
         /// The parity of the stereo center. The possible values are defined
         /// in the Inchi_StereoParity0D enumeration.
         /// </summary>
-        public sbyte Parity
-        {
-            get { return parity; }
-            set { parity = value; }
-        }
-        private sbyte parity;
-
+        public sbyte Parity;
     }//end struct InChIStereo0D
 }
