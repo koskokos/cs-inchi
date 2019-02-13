@@ -133,22 +133,22 @@ namespace CSInChI
         /// Converts the AtomsPtr to an array of InChIAtom structures.
         /// </summary>
         /// <returns>An array of InChIAtom structures</returns>
-        public Span<InChIAtom> GetAtoms()
+        public unsafe Span<InChIAtom> GetAtoms()
         {
-            //return new Span<InChIAtom>(AtomsPtr.ToPointer(), NumAtoms);
-            int atomSize = Marshal.SizeOf(typeof(InChIAtom));
-            InChIAtom[] iAtoms = new InChIAtom[NumAtoms];
+            return new Span<InChIAtom>(AtomsPtr.ToPointer(), NumAtoms);
+            //int atomSize = Marshal.SizeOf(typeof(InChIAtom));
+            //InChIAtom[] iAtoms = new InChIAtom[NumAtoms];
 
-            InChIAtom a;
-            IntPtr pAtom = AtomsPtr;
-            for (int i = 0; i < iAtoms.Length; i++)
-            {
-                a = (InChIAtom)Marshal.PtrToStructure(pAtom, typeof(InChIAtom));
-                iAtoms[i] = a;
-                pAtom = new IntPtr(pAtom.ToInt64() + atomSize);
-            }
-            
-            return iAtoms;
+            //InChIAtom a;
+            //IntPtr pAtom = AtomsPtr;
+            //for (int i = 0; i < iAtoms.Length; i++)
+            //{
+            //    a = (InChIAtom)Marshal.PtrToStructure(pAtom, typeof(InChIAtom));
+            //    iAtoms[i] = a;
+            //    pAtom = new IntPtr(pAtom.ToInt64() + atomSize);
+            //}
+
+            //return iAtoms;
         }
 
         /// <summary>

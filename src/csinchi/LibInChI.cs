@@ -33,6 +33,7 @@
 
 using System;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -184,7 +185,9 @@ namespace CSInChI
                 string key = LibInChI.GetInChIKey(inchi);
 
                 //create structure data to generate the sdf file text
-                inStruc.SetAtoms(outStruc.GetAtoms().ToArray());
+                var a = outStruc.GetAtoms();
+                var b = a.ToArray().Select(s => s.ElementName).ToArray();
+                inStruc.SetAtoms(a.ToArray());
                 inStruc.SetStereoData(outStruc.GetStereoData());
                 //inStruc.Options = "/outputsdf";
 
