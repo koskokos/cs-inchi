@@ -206,8 +206,13 @@ namespace CSInChI
         /// <param name="stereoData">the array of InChIStereo0D structures</param>
         public void SetStereoData(IEnumerable<InChIStereo0D> stereoData)
         {
-            foreach (InChIStereo0D st in stereoData)
-                AddStereo0D(st);
+            if (stereoData != null)
+            {
+                foreach (InChIStereo0D st in stereoData)
+                {
+                    AddStereo0D(st);
+                }
+            }
         }
 
         /// <summary>

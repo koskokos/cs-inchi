@@ -188,7 +188,8 @@ namespace CSInChI
                 var a = outStruc.GetAtoms();
                 var b = a.ToArray().Select(s => s.ElementName).ToArray();
                 inStruc.SetAtoms(a.ToArray());
-                inStruc.SetStereoData(outStruc.GetStereoData());
+                var stereo = outStruc.GetStereoData();
+                inStruc.SetStereoData(stereo);
                 //inStruc.Options = "/outputsdf";
 
                 string sdfText = LibInChI.GetInChI(ref inStruc);
@@ -539,8 +540,6 @@ namespace CSInChI
             {
                  output.Dispose();
             }
-            if (retCode != InChIRetVal.OKAY)
-                return "";
 
             return ret;
         }

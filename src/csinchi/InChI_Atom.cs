@@ -248,7 +248,7 @@ namespace CSInChI
 
                 for (int i = 0; i < value.Length; i++)
                 {
-                    bond_stereo[i] = (sbyte)value[i];
+                    elname[i] = (sbyte)value[i];
                 }
             }
         }
@@ -258,7 +258,7 @@ namespace CSInChI
         /// </summary>
         public short NumBonds
         {
-            get { return NumBonds; }
+            get { return num_bonds; }
             set
             {
                 if (num_bonds > 20)
