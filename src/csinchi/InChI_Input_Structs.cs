@@ -264,7 +264,7 @@ namespace CSInChI
         /// </summary>
         public void Dispose()
         {
-            if (AtomsPtr != IntPtr.Zero || this.StereoDataPtr != IntPtr.Zero)
+            if (AtomsPtr != IntPtr.Zero || StereoDataPtr != IntPtr.Zero)
             {
                 Marshal.FreeHGlobal(AtomsPtr);
                 Marshal.FreeHGlobal(StereoDataPtr);

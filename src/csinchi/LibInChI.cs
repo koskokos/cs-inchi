@@ -35,6 +35,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Security;
 using System.Text;
 
 
@@ -272,11 +273,11 @@ namespace CSInChI
         ///        try
         ///        {
         ///            int ret = LibInChI.ParseInChI(ref inp, out outStruct);
-        ///            Console.WriteLine(InChIRetVal.GetStringVal(ret));
+        ///            // Console.WriteLine(InChIRetVal.GetStringVal(ret));
         ///            
         ///            foreach (InChIAtom atom in outStruct.GetAtoms())
         ///            {
-        ///                Console.WriteLine(atom.ElementName + " " + atom.NumBonds);
+        ///                // Console.WriteLine(atom.ElementName + " " + atom.NumBonds);
         ///            }
         ///        }
         ///        finally
@@ -288,6 +289,7 @@ namespace CSInChI
         ///}
         /// </code></example>
         [DllImport("libinchi.dll", EntryPoint = "GetStructFromINCHI")]
+        [SuppressUnmanagedCodeSecurity]
         public static extern int ParseInChI(ref InChIStringInput input, out InChIStrucOutput output);
 
         /// <summary>
@@ -301,6 +303,7 @@ namespace CSInChI
         /// <param name="output">the structure that holds the InChI output</param>
         /// <returns>an error code indicating the success or failure of the function call</returns>
         [DllImport("libinchi.dll", EntryPoint = "GetStdINCHI")]
+        [SuppressUnmanagedCodeSecurity]
         public static extern int GetInChI(ref InChIStrucInput structData, out InChIStringOutput output);
 
         /// <summary>
@@ -346,7 +349,7 @@ namespace CSInChI
         ///    {
         ///        retCode = LibInChI.CheckInChIKey(key);
         ///        checkVal = CheckInChIKeyResult.GetStringVal(retCode);
-        ///        Console.WriteLine("{0} -> {1}\n", key, checkVal);
+        ///        // Console.WriteLine("{0} -> {1}\n", key, checkVal);
         ///    }
         ///} 
         ///
@@ -450,11 +453,11 @@ namespace CSInChI
         ///        try
         ///        {
         ///            int ret = LibInChI.ParseInChI(inchi, out outStruct);
-        ///            Console.WriteLine(InChIRetVal.GetStringVal(ret));
+        ///            // Console.WriteLine(InChIRetVal.GetStringVal(ret));
         ///
         ///            foreach (InChIAtom atom in outStruct.GetAtoms())
         ///            {
-        ///                Console.WriteLine(atom.ElementName + " " + atom.NumBonds);
+        ///                // Console.WriteLine(atom.ElementName + " " + atom.NumBonds);
         ///            }
         ///        }
         ///        finally
@@ -498,7 +501,7 @@ namespace CSInChI
         /// <seealso cref="InChIStrucOutput"/>
         public static int ParseInChI(string inchi, out InChIStrucOutput outStruct)
         {
-            return ParseInChI(inchi, "",out outStruct);
+            return ParseInChI(inchi, "", out outStruct);
         }
 
         /// <summary>
@@ -512,7 +515,7 @@ namespace CSInChI
         public static string GetInChI(ref InChIStrucInput inp)
         {
             int ret;
-            Console.WriteLine("Entering top level get inchi");
+            // Console.WriteLine("Entering top level get inchi");
             return GetInChI(ref inp, out  ret);
 
         }
@@ -530,7 +533,7 @@ namespace CSInChI
         {
             InChIStringOutput output = new InChIStringOutput();
             string ret;
-            Console.WriteLine("try getinchi starting");
+            // Console.WriteLine("try getinchi starting");
             try
             {
                 retCode = GetInChI(ref inp, out output);
@@ -561,7 +564,7 @@ namespace CSInChI
         ///         
         ///         string key = LibInChI.GetInChIKey("InChI=1/C2H2F2/c3-1-2-4/h1-2H/b2-1+",retVal);
         ///         
-        ///         Console.WriteLine(key);
+        ///         // Console.WriteLine(key);
         ///     }
         /// }
         /// 
@@ -612,7 +615,7 @@ namespace CSInChI
         ///         int retVal;
         ///         string key = LibInChI.GetInChIKey("InChI=1/C2H2F2/c3-1-2-4/h1-2H/b2-1+",retVal);
         ///         string outCode = GetInChIKeyRetVal.GetStringVal(retVal.Value);
-        ///         Console.WriteLine("{0} {1}",outCode,key);
+        ///         // Console.WriteLine("{0} {1}",outCode,key);
         ///     }
         /// }
         /// 
@@ -677,7 +680,7 @@ namespace CSInChI
         ///         
         ///         string outInChI = LibInChI.GetInChIFromInChI(inInChI, "/compress");
         /// 
-        ///         Console.WriteLine(outInChI);
+        ///         // Console.WriteLine(outInChI);
         ///     }
         /// }
         /// 
@@ -729,8 +732,8 @@ namespace CSInChI
         ///         int retCode;
         ///         string outInChI = LibInChI.GetInChIFromInChI(inInChI, "/compress", out retCode);
         ///         string result = InChIRetVal.GetStringVal(retCode);
-        ///         Console.WriteLine(result);
-        ///         Console.WriteLine(outInChI);
+        ///         // Console.WriteLine(result);
+        ///         // Console.WriteLine(outInChI);
         ///     }
         /// }
         /// 

@@ -309,123 +309,50 @@ namespace CSInChI
     /// </summary>
     /// <seealso cref="StereoParity0D"/>
     [StructLayout(LayoutKind.Sequential)]
-    public struct InChIStereo0D 
+    public unsafe struct InChIStereo0D 
     {
-        /// <summary>
-        /// Creates a new InChIStereo0D struct representing stereo chemistry
-        /// about a double bond. The CentralAtom is set to <b>LibInChI.NO_ATOM</b>
-        /// </summary>
-        /// <param name="neighbors"></param>
-        /// <param name="parity"></param>
-        public InChIStereo0D(int[] neighbors, int parity): this()
-        {
-            Neighbors = Array.ConvertAll(neighbors, new Converter<int, short>(Convert.ToInt16));
-            this.Parity = Convert.ToSByte(parity);
-            Type = StereoType0D.DOUBLEBOND;
-            centAtom = LibInChI.NO_ATOM;
-        }
-        
-        /// <summary>
-        /// Creates a new InChIStereo0D struct representing stereo chemistry
-        /// about a double bond. The CentralAtom is set to <b>LibInChI.NO_ATOM</b>
-        /// </summary>
-        /// <param name="neighbors"></param>
-        /// <param name="parity"></param>
-        public InChIStereo0D(short[] neighbors, sbyte parity) 
-            : this(neighbors,-1,1,parity){}
-        
-        /// <summary>
-        /// Creates a new InChIStereo0D structure using the specified
-        /// values.
-        /// </summary>
-        /// <param name="neighbors">an array containg the indices of neighboring atoms.</param>
-        /// <param name="centralAtom">the index of the central atom</param>
-        /// <param name="type">the type of stereo bond</param>
-        /// <param name="parity">the stereo parity</param>
-        public InChIStereo0D(short[] neighbors, short centralAtom, sbyte type, sbyte parity):this()
-        {
-            Neighbors = neighbors;
-            centAtom = centralAtom;
-            Type = type;
-            this.Parity = parity;
-        }
-
-        /// <summary>
-        /// A convenience constructor that takes regular Int32 values
-        /// and converts them short or bytes as needed.
-        /// </summary>
-        /// <param name="neighbors">an array containg the indices of neighboring atoms.</param>
-        /// <param name="centralAtom">the index of the central atom</param>
-        /// <param name="type">the type of stereo bond</param>
-        /// <param name="parity">the stereo parity</param>
-        public InChIStereo0D(int[] neighbors, int centralAtom, int type, int parity):this()
-        {
-            Neighbors = Array.ConvertAll(neighbors,
-                new Converter<int,short>(Convert.ToInt16));
-            
-            centAtom = Convert.ToInt16(centralAtom);
-            type = Convert.ToSByte(type);
-            parity = Convert.ToSByte(parity);
-        }
-
         /// <summary>
         /// An array containg the indices of the neighbors of a stereo center.
         /// The array must always have a length of 4.
         /// </summary>
-        public short[] Neighbors
-        {
-            get { return neighbors; }
-            set
-            { 
-                if(value.Length != 4)
-                    throw new ArgumentException("The array 'Neighbors' must have length 4");
+        //public short[] Neighbors
+        //{
+        //    get { return neighbors; }
+        //    set
+        //    { 
+        //        if(value.Length != 4)
+        //            throw new ArgumentException("The array 'Neighbors' must have length 4");
 
-                bool okayInput = Array.TrueForAll(value, delegate(short val)
-                {
-                    if (val > 1023 || val < 0)
-                        return false;
-                    return true;
-                });
+        //        bool okayInput = Array.TrueForAll(value, delegate(short val)
+        //        {
+        //            if (val > 1023 || val < 0)
+        //                return false;
+        //            return true;
+        //        });
 
-                if (!okayInput)
-                    throw new ArgumentException("The input array for the InChIAtom.Neighbors property contains an invalid index.");
-                
-                neighbors = value;
-            }
-        }
+        //        if (!okayInput)
+        //            throw new ArgumentException("The input array for the InChIAtom.Neighbors property contains an invalid index.");
 
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
-        short[] neighbors;
-        
-        /// <summary>
-        /// The index of the central atom in a tetrahedral stereo center
-        /// or the central atom of allene otherwise the value is -1.
-        /// </summary>
+        //        neighbors = value;
+        //    }
+        //}
+
         public short CentralAtom
         {
             get { return centAtom; }
-            
+
             set
             {
                 if (value > 1023 || value < -1)
                     throw new ArgumentException("The maximum allowable atom index is 1023");
 
-                centAtom = value; 
+                centAtom = value;
             }
         }
 
-        short centAtom;
-
-        /// <summary>
-        /// The type of stereo center. The possible values are defined
-        /// in the InChI_0D_StereoType enumeration.
-        /// </summary>
+        public fixed short neighbors[4];
+        public short centAtom;
         public sbyte Type;
-
-        /// <summary>
-        /// The parity of the stereo center. The possible values are defined
-        /// in the Inchi_StereoParity0D enumeration.
-        /// </summary>
         public sbyte Parity;
     }//end struct InChIStereo0D
 }
