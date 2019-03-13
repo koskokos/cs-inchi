@@ -50,36 +50,36 @@ namespace CSInChI
     /// with the InChI key as a property. Note the use of the try/finally pattern that ensures the disposal
     /// of unmanaged memory even if an exception is thrown.
     /// <code>
-        
+
     /// /*The output is:
     ///
     ///Structure #1
     ///   InChI v1 SDfile Output
     ///   
     /// 12 11  0  0  0  0  0  0  0  0  2 V2000
-///        0.0000    0.0000    0.0000 C   0  0  0     0  0  0  0  0  0
-///        0.0000    0.0000    0.0000 C   0  0  0     0  0  0  0  0  0
-///        0.0000    0.0000    0.0000 C   0  5  0     0  0  0  0  0  0
-///        0.0000    0.0000    0.0000 C   0  3  0     0  0  0  0  0  0
-///        0.0000    0.0000    0.0000 O   0  0  0     0  0  0  0  0  0
-///        0.0000    0.0000    0.0000 O   0  0  0     0  0  0  0  0  0
-///        0.0000    0.0000    0.0000 O   0  0  0     0  0  0  0  0  0
-///        0.0000    0.0000    0.0000 O   0  5  0     0  0  0  0  0  0
-///        0.0000    0.0000    0.0000 O   0  0  0     0  0  0  0  0  0
-///        0.0000    0.0000    0.0000 O   0  5  0     0  0  0  0  0  0
-///        0.0000    0.0000    0.0000 H   0  0  0     0  0  0  0  0  0
-///        0.0000    0.0000    0.0000 H   0  0  0     0  0  0  0  0  0
-     ///  1 11  1  0  0  0  0
-     ///  1  2  1  0  0  0  0
-     ///  1  3  1  0  0  0  0
-     ///  1  5  1  0  0  0  0
-     ///  2 12  1  0  0  0  0
-     ///  2  4  1  0  0  0  0
-     ///  2  6  1  0  0  0  0
-     ///  3  7  1  0  0  0  0
-     ///  3  8  1  0  0  0  0
-     ///  4  9  1  0  0  0  0
-     ///  4 10  1  0  0  0  0
+    ///        0.0000    0.0000    0.0000 C   0  0  0     0  0  0  0  0  0
+    ///        0.0000    0.0000    0.0000 C   0  0  0     0  0  0  0  0  0
+    ///        0.0000    0.0000    0.0000 C   0  5  0     0  0  0  0  0  0
+    ///        0.0000    0.0000    0.0000 C   0  3  0     0  0  0  0  0  0
+    ///        0.0000    0.0000    0.0000 O   0  0  0     0  0  0  0  0  0
+    ///        0.0000    0.0000    0.0000 O   0  0  0     0  0  0  0  0  0
+    ///        0.0000    0.0000    0.0000 O   0  0  0     0  0  0  0  0  0
+    ///        0.0000    0.0000    0.0000 O   0  5  0     0  0  0  0  0  0
+    ///        0.0000    0.0000    0.0000 O   0  0  0     0  0  0  0  0  0
+    ///        0.0000    0.0000    0.0000 O   0  5  0     0  0  0  0  0  0
+    ///        0.0000    0.0000    0.0000 H   0  0  0     0  0  0  0  0  0
+    ///        0.0000    0.0000    0.0000 H   0  0  0     0  0  0  0  0  0
+    ///  1 11  1  0  0  0  0
+    ///  1  2  1  0  0  0  0
+    ///  1  3  1  0  0  0  0
+    ///  1  5  1  0  0  0  0
+    ///  2 12  1  0  0  0  0
+    ///  2  4  1  0  0  0  0
+    ///  2  6  1  0  0  0  0
+    ///  3  7  1  0  0  0  0
+    ///  3  8  1  0  0  0  0
+    ///  4  9  1  0  0  0  0
+    ///  4 10  1  0  0  0  0
     ///M  CHG  4   3  -1   4   1   8  -1  10  -1
     ///M  END
     ///> &lt;INCHIKEY&gt;
@@ -172,6 +172,12 @@ namespace CSInChI
     ///</example>
     public static class LibInChI
     {
+#if WINDOWS
+        const string libInchiName = "libinchi.dll";
+#else
+        const string libInchiName = "libinchi.so.1.05.00";
+#endif
+
         static void Main(string[] args)
         {
             string inchi = "InChI=1S/C4H6O6/c5-1(3(7)8)2(6)4(9)10/h1-2,5-7,9H/q-2/t1-,2+";
@@ -288,7 +294,7 @@ namespace CSInChI
         ///    }
         ///}
         /// </code></example>
-        [DllImport("libinchi.dll", EntryPoint = "GetStructFromINCHI")]
+        [DllImport(libInchiName, EntryPoint = "GetStructFromINCHI")]
         [SuppressUnmanagedCodeSecurity]
         public static extern int ParseInChI(ref InChIStringInput input, out InChIStrucOutput output);
 
@@ -302,7 +308,7 @@ namespace CSInChI
         /// <param name="structData">the structure that holds the input structure data</param>
         /// <param name="output">the structure that holds the InChI output</param>
         /// <returns>an error code indicating the success or failure of the function call</returns>
-        [DllImport("libinchi.dll", EntryPoint = "GetStdINCHI")]
+        [DllImport(libInchiName, EntryPoint = "GetStdINCHI")]
         [SuppressUnmanagedCodeSecurity]
         public static extern int GetInChI(ref InChIStrucInput structData, out InChIStringOutput output);
 
@@ -315,7 +321,7 @@ namespace CSInChI
         /// <param name="inchi">the inchi string</param>
         /// <param name="sb">a StringBuilder to hold the InChI key output</param>
         /// <returns>an error code indicating the success or failure of the function call</returns>
-        [DllImport("libinchi.dll", EntryPoint = "GetStdINCHIKeyFromStdINCHI")]
+        [DllImport(libInchiName, EntryPoint = "GetStdINCHIKeyFromStdINCHI")]
         public static extern int GetInChIKey([MarshalAs(UnmanagedType.LPStr)]string inchi, [MarshalAs(UnmanagedType.LPStr)]StringBuilder sb);
 
         /// <summary>
@@ -398,7 +404,7 @@ namespace CSInChI
         /// </code>
         /// </example>
         /// <seealso cref="CheckInChIKeyResult"/>
-        [DllImport("libinchi.dll", EntryPoint = "CheckINCHIKey")]
+        [DllImport(libInchiName, EntryPoint = "CheckINCHIKey")]
         public static extern int CheckInChIKey(string inchiKey);
 
         /// <summary>
@@ -407,7 +413,7 @@ namespace CSInChI
         /// as it is called in the Dispose method of the InChIStrucOutput structure.
         /// </summary>
         /// <param name="outputStruct">the InChIStrucOutput to deallocate </param>
-        [DllImport("libinchi.dll", EntryPoint = "FreeStructFromINCHI")]
+        [DllImport(libInchiName, EntryPoint = "FreeStructFromINCHI")]
         internal static extern void DeallocateOutputStruct(ref InChIStrucOutput outputStruct);
 
         /// <summary>
@@ -415,7 +421,7 @@ namespace CSInChI
         /// as it is called in the Dispose method of the InChIStringOutput structure.
         /// </summary>
         /// <param name="inchiOut">the InChIStringOutput to deallocate</param>
-        [DllImport("libinchi.dll", EntryPoint = "FreeINCHI")]
+        [DllImport(libInchiName, EntryPoint = "FreeINCHI")]
         internal static extern void DeallocateInChIString(ref InChIStringOutput inchiOut);
 
         /// <summary>
@@ -425,7 +431,7 @@ namespace CSInChI
         /// <param name="inp">the input inchi</param>
         /// <param name="outStruct">the struct that will hold the output</param>
         /// <returns>an error code indicating the success or failure of the function call</returns>
-        [DllImport("libinchi.dll", EntryPoint = "GetINCHIfromINCHI")]
+        [DllImport(libInchiName, EntryPoint = "GetINCHIfromINCHI")]
         public static extern int GetInChIFromInChI(ref InChIStringInput inp, out InChIStringOutput outStruct);
 
         /// <summary>
