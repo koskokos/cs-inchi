@@ -21,13 +21,16 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Condition="$(DefineConstants.Contains(WINDOWS))" Include="libinchi.dll">
+    <Content Condition="$(DefineConstants.Contains(WINDOWS))" Include="runtimes\win-x64\native\libinchi.dll">
       <Pack>true</Pack>
       <PackageCopyToOutput>true</PackageCopyToOutput>
     </Content>
-    <Content Condition="!$(DefineConstants.Contains(WINDOWS))" Include="libinchi.so.1.05.00">
+    <Content Include="runtimes\linux-x64\native\libinchi.so">
       <Pack>true</Pack>
       <PackageCopyToOutput>true</PackageCopyToOutput>
+      <PackagePath>runtimes\linux-x64\native\libinchi.so</PackagePath>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToPublishDirectory>Always</CopyToPublishDirectory>
     </Content>
   </ItemGroup>
 

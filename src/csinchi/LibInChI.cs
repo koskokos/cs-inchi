@@ -173,9 +173,9 @@ namespace CSInChI
     public static class LibInChI
     {
 #if WINDOWS
-        const string libInchiName = "libinchi.dll";
+        const string libInchiName = "inchi";
 #else
-        const string libInchiName = "libinchi.so.1.05.00";
+        const string libInchiName = "inchi";
 #endif
 
         static void Main(string[] args)
