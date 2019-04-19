@@ -172,11 +172,7 @@ namespace CSInChI
     ///</example>
     public static class LibInChI
     {
-#if WINDOWS
         const string libInchiName = "inchi";
-#else
-        const string libInchiName = "inchi";
-#endif
 
         static void Main(string[] args)
         {
@@ -186,10 +182,10 @@ namespace CSInChI
 
             try
             {
-                LibInChI.ParseInChI(inchi, out outStruc);
+                ParseInChI(inchi, out outStruc);
 
                 //get the InChI key
-                string key = LibInChI.GetInChIKey(inchi);
+                string key = GetInChIKey(inchi);
 
                 //create structure data to generate the sdf file text
                 var a = outStruc.GetAtoms();
@@ -199,7 +195,7 @@ namespace CSInChI
                 inStruc.SetStereoData(stereo);
                 //inStruc.Options = "/outputsdf";
 
-                string sdfText = LibInChI.GetInChI(ref inStruc);
+                string sdfText = GetInChI(ref inStruc);
 
                 //append the key to the file text as a property
                 key = "> &lt;INCHIKEY&gt;\n" + key + "\n";
@@ -490,7 +486,7 @@ namespace CSInChI
         {
             InChIStringInput inp = new InChIStringInput(inchi, options);
 
-            int retCode = ParseInChI(ref inp,out outStruct);
+            int retCode = ParseInChI(ref inp, out outStruct);
 
             return retCode;
         }

@@ -16,20 +16,26 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <DefineConstants>TRACE;WINDOWS</DefineConstants>
+  <PropertyGroup>
+    <IsWindows Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Windows)))' == 'True'">True</IsWindows>
+    <IsLinux Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Linux)))' == 'True'">True</IsLinux>
   </PropertyGroup>
 
+  <PropertyGroup Condition="$(IsWindows) == 'True'">
+    <DefineConstants>TRACE;WINDOWS</DefineConstants>
+  </PropertyGroup>
+  
   <ItemGroup>
-    <Content Condition="$(DefineConstants.Contains(WINDOWS))" Include="runtimes\win-x64\native\libinchi.dll">
+    <Content Condition="$(IsWindows) == 'True'" Include="inchi.dll">
       <Pack>true</Pack>
       <PackageCopyToOutput>true</PackageCopyToOutput>
-    </Content>
-    <Content Include="runtimes\linux-x64\native\libinchi.so">
-      <Pack>true</Pack>
-      <PackageCopyToOutput>true</PackageCopyToOutput>
-      <PackagePath>runtimes\linux-x64\native\libinchi.so</PackagePath>
+      <PackagePath>runtimes/win-x64/native/libinchi.dll;runtimes/win-x86/native/libinchi.dll</PackagePath>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Condition="$(IsLinux) == 'True'" Include="libinchi.so" >
+      <Pack>true</Pack>
+      <PackageCopyToOutput>true</PackageCopyToOutput>
+      <PackagePath>runtimes/linux-x64/native/libinchi.so</PackagePath>
       <CopyToPublishDirectory>Always</CopyToPublishDirectory>
     </Content>
   </ItemGroup>
