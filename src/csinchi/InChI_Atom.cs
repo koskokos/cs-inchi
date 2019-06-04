@@ -122,9 +122,9 @@ namespace CSInChI
 
             HCounts = hCounts;
             BondTypes = bondTypes;
-            this.charge = charge;
-            this.radical = radical;
-            isotopic_mass = isotopicMass;
+            Charge = charge;
+            Radical = radical;
+            IsotopicMass = isotopicMass;
         }
 
         public double x;
@@ -136,9 +136,9 @@ namespace CSInChI
         public fixed sbyte elname[6];
         short num_bonds;
         public fixed sbyte num_iso_H[4];
-        public short isotopic_mass;
-        public sbyte radical;
-        public sbyte charge;
+        public short IsotopicMass;
+        public sbyte Radical;
+        public sbyte Charge;
 
         
 
@@ -315,27 +315,19 @@ namespace CSInChI
         /// An array containg the indices of the neighbors of a stereo center.
         /// The array must always have a length of 4.
         /// </summary>
-        //public short[] Neighbors
-        //{
-        //    get { return neighbors; }
-        //    set
-        //    { 
-        //        if(value.Length != 4)
-        //            throw new ArgumentException("The array 'Neighbors' must have length 4");
+        public short[] Neighbors
+        {
+            set
+            {
+                if (value.Length != 4)
+                    throw new ArgumentException("The array 'Neighbors' must have length 4");
 
-        //        bool okayInput = Array.TrueForAll(value, delegate(short val)
-        //        {
-        //            if (val > 1023 || val < 0)
-        //                return false;
-        //            return true;
-        //        });
-
-        //        if (!okayInput)
-        //            throw new ArgumentException("The input array for the InChIAtom.Neighbors property contains an invalid index.");
-
-        //        neighbors = value;
-        //    }
-        //}
+                neighbors[0] = value[0];
+                neighbors[1] = value[1];
+                neighbors[2] = value[2];
+                neighbors[3] = value[3];
+            }
+        }
 
         public short CentralAtom
         {
