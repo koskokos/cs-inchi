@@ -37,6 +37,7 @@
       <PackageCopyToOutput>true</PackageCopyToOutput>
       <PackagePath>runtimes/linux-x64/native/libinchi.so</PackagePath>
       <CopyToPublishDirectory>Always</CopyToPublishDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
 
