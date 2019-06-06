@@ -329,21 +329,8 @@ namespace CSInChI
             }
         }
 
-        public short CentralAtom
-        {
-            get { return centAtom; }
-
-            set
-            {
-                if (value > 1023 || value < -1)
-                    throw new ArgumentException("The maximum allowable atom index is 1023");
-
-                centAtom = value;
-            }
-        }
-
         public fixed short neighbors[4];
-        public short centAtom;
+        public short CentralAtom;
         public sbyte Type;
         public sbyte Parity;
     }//end struct InChIStereo0D

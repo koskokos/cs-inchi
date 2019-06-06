@@ -178,7 +178,7 @@ namespace CSInChI
         {
             string inchi = "InChI=1S/C4H6O6/c5-1(3(7)8)2(6)4(9)10/h1-2,5-7,9H/q-2/t1-,2+";
             InChIStrucOutput outStruc = new InChIStrucOutput();
-            InChIStrucInput inStruc = new InChIStrucInput();
+            InChIStrucInput inStruc = default;
 
             try
             {
@@ -190,9 +190,7 @@ namespace CSInChI
                 //create structure data to generate the sdf file text
                 var a = outStruc.GetAtoms();
                 var b = a.ToArray().Select(s => s.ElementName).ToArray();
-                inStruc.SetAtoms(a.ToArray());
-                var stereo = outStruc.GetStereoData();
-                inStruc.SetStereoData(stereo);
+                inStruc = new InChIStrucInput(a.ToArray(), outStruc.GetStereoData(), null);
                 //inStruc.Options = "/outputsdf";
 
                 string sdfText = GetInChI(ref inStruc);

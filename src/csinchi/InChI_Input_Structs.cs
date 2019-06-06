@@ -105,174 +105,98 @@ namespace CSInChI
     /// </summary>
     /// <seealso cref="LibInChI.GetInChI"/>
     [StructLayout(LayoutKind.Sequential, CharSet=CharSet.Ansi)]
-    public struct InChIStrucInput : IDisposable
+    public unsafe struct InChIStrucInput : IDisposable
     {
-        /// <summary>
-        /// Creates a new instance of this structure with no
-        /// stereo data and an empty options string.
-        /// </summary>
-        /// <param name="atoms"></param>
-        public InChIStrucInput(IEnumerable<InChIAtom> atoms) : this(atoms,"")
+        readonly static int _atomSize = Marshal.SizeOf<InChIAtom>();
+        readonly static int _stereo0DSize = Marshal.SizeOf<InChIStereo0D>();
+
+        public InChIStrucInput(InChIAtom[] atoms) : this(atoms,"")
         { 
             
         }
 
-        /// <summary>
-        /// Creates a new instance from the specified inputs. See inchi_options.txt for a complete list of options.
-        /// </summary>
-        /// <param name="atoms">the atoms contained by this structure</param>
-        /// <param name="stereoData">the stereo data</param>
-        /// <param name="options">the space delimited options string</param>
-        public InChIStrucInput(IEnumerable<InChIAtom> atoms, IEnumerable<InChIStereo0D> stereoData, string options)
+        public InChIStrucInput(InChIAtom[] atoms, InChIStereo0D[] stereoData, string options)
             : this()
         {
-            SetAtoms(atoms);
-            SetStereoData(stereoData);
-            Options = options;
-        }
-
-        /// <summary>
-        /// Creates a new InChIStrucInput with no stereo data. See inchi_options.txt for a complete list of options.
-        /// </summary>
-        /// <param name="atoms">an IEnumerable of atoms to add to this structure</param>
-        /// <param name="options">the space delimited options string</param>
-        public InChIStrucInput(IEnumerable<InChIAtom> atoms, string options)
-            : this(atoms,null,options)
-        {}
-
-        /// <summary>
-        /// A pointer to the first atom in the array of atoms
-        /// </summary>
-        private IntPtr AtomsPtr;
-        
-        /// <summary>
-        /// A pointer to the first Stereo0D structure in the array
-        /// of Stereo0D structures.
-        /// </summary>
-        private IntPtr StereoDataPtr;
-
-        /// <summary>
-        /// The space delimited string of options. Options start with
-        /// '-' or '/' depending on the platform.
-        /// </summary>
-        public string Options
-        {
-            get { return opt; }
-            set { opt = value; }
-        }
-
-        private string opt;
-
-        /// <summary>
-        /// The number of AtomsPtr in the structure. Max value is
-        /// 1023.
-        /// </summary>
-        public short NumAtoms
-        {
-            get { return numAtoms; }
-            set { numAtoms = value; }
-        }
-
-        private short numAtoms;
-
-        /// <summary>
-        /// The number of Stereo0D structures.
-        /// </summary>
-        public short NumStereo0D
-        {
-            get { return numStereo; }
-            set { numStereo = value; }
-        }
-
-        private short numStereo;
-
-        /// <summary>
-        /// Converts an IEnumerable of InChI_Atoms into a series of pointers
-        /// in unmanaged memory and sets the internal pointer used
-        /// when this structure is marshaled 
-        /// </summary>
-        /// <param name="atoms">the array of InChI_Atoms to set.</param>
-        public void SetAtoms(IEnumerable<InChIAtom> atoms)
-        {
-            foreach (InChIAtom a in atoms)
-                AddAtom(a);
-        }
-
-        /// <summary>
-        /// Converts an IEnumerable of InChIStereo0D structures into a series
-        /// of pointers in unmanaged memory and sets the internal pointer used
-        /// when this structure is marshaled. 
-        /// </summary>
-        /// <param name="stereoData">the array of InChIStereo0D structures</param>
-        public void SetStereoData(IEnumerable<InChIStereo0D> stereoData)
-        {
-            if (stereoData != null)
             {
-                foreach (InChIStereo0D st in stereoData)
+                var atomsLength = atoms.Length;
+                NumAtoms = (short)atomsLength;
+                var atomsPtr = Marshal.AllocHGlobal(new IntPtr(atomsLength * _atomSize));
+                try
                 {
-                    AddStereo0D(st);
+                    long addr = atomsPtr.ToInt64();
+                    for (int i = 0; i < atomsLength; i++, addr += _atomSize)
+                    {
+                        Marshal.StructureToPtr(atoms[i], new IntPtr(addr), true);
+                    }
+                }
+                catch
+                {
+                    Marshal.FreeHGlobal(atomsPtr);
+                    throw;
+                }
+                AtomsPtr = atomsPtr.ToPointer();
+            }
+
+            {
+                var stereo0DLength = stereoData?.Length ?? 0;
+                if (stereo0DLength != 0)
+                {
+                    NumStereo0D = (short)stereo0DLength;
+                    var stereoDataPtr = Marshal.AllocHGlobal(new IntPtr(stereo0DLength * _stereo0DSize));
+                    try
+                    {
+                        long addr = stereoDataPtr.ToInt64();
+                        for (int i = 0; i < stereo0DLength; i++, addr += _stereo0DSize)
+                        {
+                            Marshal.StructureToPtr(stereoData[i], new IntPtr(addr), true);
+                        }
+                    }
+                    catch
+                    {
+                        Marshal.FreeHGlobal(stereoDataPtr);
+                        throw;
+                    }
+                    StereoDataPtr = stereoDataPtr.ToPointer();
                 }
             }
+            if (!string.IsNullOrEmpty(options))
+            {
+                Options = Marshal.StringToHGlobalAnsi(options).ToPointer();
+            }
         }
-
-        /// <summary>
-        /// Adds an InChIStereo0D to this structure.
-        /// </summary>
-        /// <param name="stereo"></param>
-        public void AddStereo0D(InChIStereo0D stereo)
-        {
-            int stSize = Marshal.SizeOf(stereo);
-
-            if (StereoDataPtr == IntPtr.Zero)
-            {
-                StereoDataPtr = Marshal.AllocHGlobal(stSize);
-                Marshal.StructureToPtr(stereo, StereoDataPtr, false);
-            }
-            else
-            {
-                StereoDataPtr = Marshal.ReAllocHGlobal(StereoDataPtr, new IntPtr((NumStereo0D + 1) * stSize));
-                IntPtr p = new IntPtr(StereoDataPtr.ToInt64() + NumStereo0D * stSize);
-                Marshal.StructureToPtr(stereo, p, true);
-            }
-            numStereo++;
-        }
-
-        /// <summary>
-        /// Adds an InChIAtom to this structure. 
-        /// </summary>
-        /// <param name="atom"></param>
-        public void AddAtom(InChIAtom atom)
-        {
-            int atomSize = Marshal.SizeOf(atom);
-
-            if (AtomsPtr == IntPtr.Zero)
-            {
-                AtomsPtr = Marshal.AllocHGlobal(atomSize);
-                Marshal.StructureToPtr(atom, AtomsPtr, false);
-            }
-            else
-            {
-                AtomsPtr = Marshal.ReAllocHGlobal(AtomsPtr, new IntPtr((NumAtoms + 1) * atomSize));
-                IntPtr p = new IntPtr(AtomsPtr.ToInt64() + NumAtoms * atomSize);
-                Marshal.StructureToPtr(atom, p, true);
-            }
-            numAtoms++;
-        }
+        
+        public InChIStrucInput(InChIAtom[] atoms, string options)
+            : this(atoms,null,options)
+        {}
+        
+        private readonly void* AtomsPtr;
+        private readonly void* StereoDataPtr;
+        public readonly void* Options;
+        public readonly short NumAtoms;
+        public readonly short NumStereo0D;
 
         /// <summary>
         /// Releases all unmanaged resources used by this structure.
         /// </summary>
         public void Dispose()
         {
-            if (AtomsPtr != IntPtr.Zero || StereoDataPtr != IntPtr.Zero)
+            var atomsPtr = new IntPtr(AtomsPtr);
+            if (atomsPtr != IntPtr.Zero)
             {
-                Marshal.FreeHGlobal(AtomsPtr);
-                Marshal.FreeHGlobal(StereoDataPtr);
-                
-                AtomsPtr = IntPtr.Zero;
-                StereoDataPtr = IntPtr.Zero;
-                
-                GC.SuppressFinalize(this);
+                Marshal.FreeHGlobal(atomsPtr);
+            }
+
+            var stereoDataPtr = new IntPtr(StereoDataPtr);
+            if (stereoDataPtr != IntPtr.Zero)
+            {
+                Marshal.FreeHGlobal(stereoDataPtr);
+            }
+
+            var optionsPtr = new IntPtr(Options);
+            if (optionsPtr != IntPtr.Zero)
+            {
+                Marshal.FreeHGlobal(optionsPtr);
             }
         }
     }//end struct InChIStrucInput
