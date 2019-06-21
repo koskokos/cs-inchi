@@ -316,7 +316,8 @@ namespace CSInChI
         /// <param name="sb">a StringBuilder to hold the InChI key output</param>
         /// <returns>an error code indicating the success or failure of the function call</returns>
         [DllImport(libInchiName, EntryPoint = "GetStdINCHIKeyFromStdINCHI")]
-        public static extern int GetInChIKey([MarshalAs(UnmanagedType.LPStr)]string inchi, [MarshalAs(UnmanagedType.LPStr)]StringBuilder sb);
+        [SuppressUnmanagedCodeSecurity]
+        static extern int GetInChIKey([MarshalAs(UnmanagedType.LPStr)]string inchi, [MarshalAs(UnmanagedType.LPStr)]StringBuilder sb);
 
         /// <summary>
         /// An external method that calls the CheckInChIKey function
@@ -399,6 +400,7 @@ namespace CSInChI
         /// </example>
         /// <seealso cref="CheckInChIKeyResult"/>
         [DllImport(libInchiName, EntryPoint = "CheckINCHIKey")]
+        [SuppressUnmanagedCodeSecurity]
         public static extern int CheckInChIKey(string inchiKey);
 
         /// <summary>
@@ -408,6 +410,7 @@ namespace CSInChI
         /// </summary>
         /// <param name="outputStruct">the InChIStrucOutput to deallocate </param>
         [DllImport(libInchiName, EntryPoint = "FreeStructFromINCHI")]
+        [SuppressUnmanagedCodeSecurity]
         internal static extern void DeallocateOutputStruct(ref InChIStrucOutput outputStruct);
 
         /// <summary>
@@ -416,6 +419,7 @@ namespace CSInChI
         /// </summary>
         /// <param name="inchiOut">the InChIStringOutput to deallocate</param>
         [DllImport(libInchiName, EntryPoint = "FreeINCHI")]
+        [SuppressUnmanagedCodeSecurity]
         internal static extern void DeallocateInChIString(ref InChIStringOutput inchiOut);
 
         /// <summary>
@@ -426,6 +430,7 @@ namespace CSInChI
         /// <param name="outStruct">the struct that will hold the output</param>
         /// <returns>an error code indicating the success or failure of the function call</returns>
         [DllImport(libInchiName, EntryPoint = "GetINCHIfromINCHI")]
+        [SuppressUnmanagedCodeSecurity]
         public static extern int GetInChIFromInChI(ref InChIStringInput inp, out InChIStringOutput outStruct);
 
         /// <summary>
@@ -591,8 +596,7 @@ namespace CSInChI
             StringBuilder sb = new StringBuilder(28);
             int retCode = GetInChIKey(inchi, sb);
 
-            if (retCode != 0)
-                return "";
+            if (retCode != 0) throw new ApplicationException($"GetInChIKey returned code {retCode}");
 
             return sb.ToString();
         }
