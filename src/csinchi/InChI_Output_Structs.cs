@@ -36,88 +36,26 @@ using System.Runtime.InteropServices;
 
 namespace CSInChI
 {
-    /// <summary>
-    /// A structure that holds structural data from the
-    /// LibInChI.ParseInChI method. This structure should be 
-    /// used with the try/finally pattern to ensure deallocation
-    /// of the unmanaged memory.
-    /// </summary>
-    /// <seealso cref="LibInChI.ParseInChI"/>
-    /// 
-    /// <example>This example illustrates the use of this structure.
-    /// <code>
-    ///class Program
-    ///{
-    ///    static void Main(string[] args)
-    ///    {
-    ///        string inchi = "InChI=1/C2H2F2/c3-1-2-4/h1-2H/b2-1+";
-    ///        InChIStringInput inp = new InChIStringInput(inchi);
-    ///        InChIStrucOutput outStruct = new InChIStrucOutput();
-    ///
-    ///        try
-    ///        {
-    ///            int ret = LibInChI.ParseInChI(ref inp, out outStruct);
-    ///            string retCode = InChIRetVal.GetStringVal(ret);
-    ///            Console.WriteLine(retCode);
-    ///
-    ///            foreach (InChIAtom atom in outStruct.GetAtoms())
-    ///            {
-    ///                Console.WriteLine("{0} {1}", atom.ElementName, atom.NumBonds);
-    ///            }
-    ///        }
-    ///        finally
-    ///        {
-    ///            //free the unmanaged memory
-    ///            outStruct.Dispose();
-    ///        }
-    ///    }
-    ///}
-    /// </code></example>
     [StructLayout(LayoutKind.Sequential, CharSet=CharSet.Ansi)]
-    public struct InChIStrucOutput : IDisposable
+    public unsafe struct InChIStrucOutput : IDisposable
     {
-        /// <summary>
-        /// A pointer to the first atom in the array of atoms
-        /// </summary>
-        private IntPtr AtomsPtr;
-
-        /// <summary>
-        /// A pointer to the first Stereo0D structure in the array
-        /// of Stereo0D structures.
-        /// </summary>
+        private void* AtomsPtr;
         private IntPtr StereoDataPtr;
-
-        /// <summary>
-        /// The number of atoms in the structure. Max value is
-        /// 1023.
-        /// </summary>
         public short NumAtoms;
-
-        /// <summary>
-        /// The number of Stereo0D structures.
-        /// </summary>
         public short NumStereo0D;
-
-        /// <summary>
-        /// A string containing error/warning messages.
-        /// </summary>
-        public string ErrorMsg
-        {
-            get { return Marshal.PtrToStringAnsi(errMsg); }
-        }
-
         private IntPtr errMsg;
+        private IntPtr log;
+
+
+        public string ErrorMsg => Marshal.PtrToStringAnsi(errMsg);
+
 
         /// <summary>
         /// A string containing a list of recognized options and 
         /// possibly an Error/warning message. 
         /// </summary>
-        public string OutputLog
-        {
-            get { return Marshal.PtrToStringAnsi(log); }
-        }
+        public string OutputLog => Marshal.PtrToStringAnsi(log);
 
-        private IntPtr log;
 
         //marshaling nested arrays is not supported
 
@@ -129,32 +67,8 @@ namespace CSInChI
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
         public uint[] WarningFlags;
 
-        /// <summary>
-        /// Converts the AtomsPtr to an array of InChIAtom structures.
-        /// </summary>
-        /// <returns>An array of InChIAtom structures</returns>
-        public unsafe Span<InChIAtom> GetAtoms()
-        {
-            return new Span<InChIAtom>(AtomsPtr.ToPointer(), NumAtoms);
-            //int atomSize = Marshal.SizeOf(typeof(InChIAtom));
-            //InChIAtom[] iAtoms = new InChIAtom[NumAtoms];
+        public Span<InChIAtom> GetAtoms() => new Span<InChIAtom>(AtomsPtr, NumAtoms);
 
-            //InChIAtom a;
-            //IntPtr pAtom = AtomsPtr;
-            //for (int i = 0; i < iAtoms.Length; i++)
-            //{
-            //    a = (InChIAtom)Marshal.PtrToStructure(pAtom, typeof(InChIAtom));
-            //    iAtoms[i] = a;
-            //    pAtom = new IntPtr(pAtom.ToInt64() + atomSize);
-            //}
-
-            //return iAtoms;
-        }
-
-        /// <summary>
-        /// Converts the StereoDataPtr to an array of InChIStereo0D structures.
-        /// </summary>
-        /// <returns>An array of InChIStereo0D structures</returns>
         public InChIStereo0D[] GetStereoData()
         {
             if (NumStereo0D == 0)
@@ -173,103 +87,34 @@ namespace CSInChI
             return stereoInfo;
         }
 
-        /// <summary>
-        /// Releases all unmanaged resources used by this structure.
-        /// </summary>
         public void Dispose()
         {
-            //the output log pointer is always initalized even if the
-            //unmanaged function does not produce any structure data
             if (log != IntPtr.Zero)
             {
                 LibInChI.DeallocateOutputStruct(ref this);
                 GC.SuppressFinalize(this);
             }
         }
+    }
 
-    }// end struct InChIStrucOutput
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
+    public unsafe struct InChIStringOutput : IDisposable
+    {
+        internal sbyte* inchi;
+        internal sbyte* auxinfo;
+        internal sbyte* errMsg;
+        internal sbyte* outLog;
 
-    /// <summary>
-    /// A structure that holds the output data from methods
-    /// that create an InChI. If the fields are initalized
-    /// by the GetInChI(ref InChIStrucInput structData, out InChIStringOutput output)
-    /// method the try/finally pattern should be used to ensure deallocation
-    /// of the unmanaged memory. Note that the properties of this structure convert pointers to strings
-    /// when accessed. Repeatedly accessing these fields will lead to a loss of
-    /// performance.
-    /// </summary>
-    /// <example></example>
-    /// <seealso cref="LibInChI.GetInChI"/>
-    [StructLayout(LayoutKind.Sequential, CharSet=CharSet.Ansi)]
-    public struct InChIStringOutput : IDisposable
-    { 
-        private IntPtr inchi;
+        public string InChI => new string(inchi);
+        public string ErrorMessage => new string(errMsg);
+        public string OutputLog => new string(outLog);
 
-        /// <summary>
-        /// A read only property that returns the InChI string.
-        /// </summary>
-        public string InChI
-        { 
-            get
-            {
-                return Marshal.PtrToStringAnsi(inchi);
-            }
-        }
-
-        private IntPtr auxinfo;
-
-        /// <summary>
-        /// A read only string containg the aux info.
-        /// </summary>
-        public string AuxInfo
-        {
-            get
-            {
-                return Marshal.PtrToStringAnsi(auxinfo);
-            }
-        }
-
-        private IntPtr errMsg;
-
-        /// <summary>
-        /// A read only string containing error/warning messages.
-        /// </summary>
-        public string ErrorMessage
-        {
-            get 
-            { 
-                return Marshal.PtrToStringAnsi(errMsg); 
-            }
-        }
-
-        private IntPtr outLog;
-
-        /// <summary>
-        /// A read only string containing a list of recognized options and 
-        /// possibly an Error/warning message. 
-        /// </summary>
-        public string OutputLog
-        {   get 
-            { 
-                return Marshal.PtrToStringAnsi(outLog); 
-            }
-        }
-
-        /// <summary>
-        /// Releases all resources used by this structure.
-        /// </summary>
         public void Dispose()
         {
-            //the output log pointer will be initalized
-            //even if the call to GetInChI fails
-            if(outLog != IntPtr.Zero)
+            if (outLog != default)
             {
                 LibInChI.DeallocateInChIString(ref this);
-                GC.SuppressFinalize(this);
             }
-        
         }
-        
-    }//end struct InChIStringOutput
-
-}//end namespace csinchi
+    }
+}

@@ -8,7 +8,7 @@
   <PropertyGroup>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <ApplicationIcon />
-    <OutputType>Exe</OutputType>
+    <OutputType>Library</OutputType>
     <StartupObject />
   </PropertyGroup>
 
@@ -32,7 +32,7 @@
       <PackagePath>runtimes/win-x64/native/libinchi.dll;runtimes/win-x86/native/libinchi.dll</PackagePath>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Condition="$(IsLinux) == 'True'" Include="libinchi.so" >
+    <Content Condition="$(IsLinux) == 'True'" Include="libinchi.so">
       <Pack>true</Pack>
       <PackageCopyToOutput>true</PackageCopyToOutput>
       <PackagePath>runtimes/linux-x64/native/libinchi.so</PackagePath>
